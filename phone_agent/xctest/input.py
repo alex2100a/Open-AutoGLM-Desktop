@@ -234,7 +234,7 @@ def is_keyboard_shown(
             return data.get("value", False)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception:
         pass
 

@@ -16,6 +16,10 @@ try:
 except ImportError:
     Image = None
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class Screenshot:
@@ -85,7 +89,7 @@ def get_screenshot(
             )
 
     except Exception as e:
-        print(f"截图失败: {e}")
+        logger.error(f"截图失败: {e}")
         return _get_screenshot_pyautogui(region)
 
 
@@ -111,7 +115,7 @@ def _get_screenshot_pyautogui(region: tuple[int, int, int, int] | None = None) -
             is_sensitive=False,
         )
     except Exception as e:
-        print(f"pyautogui 截图失败: {e}")
+        logger.error(f"pyautogui 截图失败: {e}")
         # 返回默认黑色图片
         return _create_fallback_screenshot()
 

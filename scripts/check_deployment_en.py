@@ -3,6 +3,9 @@ import json
 import os
 
 from openai import OpenAI
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -72,7 +75,7 @@ Usage examples:
 
     # Read test messages
     if not os.path.exists(args.messages_file):
-        print(f"Error: Message file {args.messages_file} does not exist")
+        logger.info(f"Error: Message file {args.messages_file} does not exist")
         exit(1)
 
     with open(args.messages_file) as f:
@@ -82,11 +85,11 @@ Usage examples:
     api_key = args.apikey
     model = args.model
 
-    print(f"Starting model inference test...")
-    print(f"Base URL: {base_url}")
-    print(f"Model: {model}")
-    print(f"Messages file: {args.messages_file}")
-    print("=" * 80)
+    logger.info(f"Starting model inference test...")
+    logger.info(f"Base URL: {base_url}")
+    logger.info(f"Model: {model}")
+    logger.info(f"Messages file: {args.messages_file}")
+    logger.info("=" * 80)
 
     try:
         client = OpenAI(
@@ -104,26 +107,26 @@ Usage examples:
             stream=False,
         )
 
-        print("\nModel inference result:")
-        print("=" * 80)
-        print(response.choices[0].message.content)
-        print("=" * 80)
+        logger.info("\nModel inference result:")
+        logger.info("=" * 80)
+        logger.info(response.choices[0].message.content)
+        logger.info("=" * 80)
 
         if response.usage:
-            print(f"\nStatistics:")
-            print(f"  - Prompt tokens: {response.usage.prompt_tokens}")
-            print(f"  - Completion tokens: {response.usage.completion_tokens}")
-            print(f"  - Total tokens: {response.usage.total_tokens}")
+            logger.info(f"\nStatistics:")
+            logger.info(f"  - Prompt tokens: {response.usage.prompt_tokens}")
+            logger.info(f"  - Completion tokens: {response.usage.completion_tokens}")
+            logger.info(f"  - Total tokens: {response.usage.total_tokens}")
 
-        print(
+        logger.info(
             f"\nPlease evaluate the above inference result to determine if the model deployment meets expectations."
         )
 
     except Exception as e:
-        print(f"\nError occurred while calling API:")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(
+        logger.error(f"\nError occurred while calling API:")
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Error message: {str(e)}")
+        logger.error(
             "\nTip: Please check if base_url, api_key and model parameters are correct, and if the service is running."
         )
         exit(1)

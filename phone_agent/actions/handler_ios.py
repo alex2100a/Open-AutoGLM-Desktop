@@ -15,6 +15,9 @@ from phone_agent.xctest import (
 )
 from phone_agent.xctest.input import clear_text, hide_keyboard, type_text
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 @dataclass
 class ActionResult:
@@ -144,7 +147,7 @@ class IOSActionHandler:
 
         x, y = self._convert_relative_to_absolute(element, width, height)
 
-        print(f"Physically tap on ({x}, {y})")
+        logger.info(f"Physically tap on ({x}, {y})")
 
         # Check for sensitive operation
         if "message" in action:
@@ -186,7 +189,7 @@ class IOSActionHandler:
         start_x, start_y = self._convert_relative_to_absolute(start, width, height)
         end_x, end_y = self._convert_relative_to_absolute(end, width, height)
 
-        print(f"Physically scroll from ({start_x}, {start_y}) to ({end_x}, {end_y})")
+        logger.info(f"Physically scroll from ({start_x}, {start_y}) to ({end_x}, {end_y})")
 
         swipe(
             start_x,

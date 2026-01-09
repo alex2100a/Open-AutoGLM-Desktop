@@ -3,6 +3,9 @@
 Based on iOS app bundle ID conventions and common iOS applications.
 Bundle IDs are in the format: com.company.appName
 """
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 APP_PACKAGES_IOS: dict[str, str] = {
     # Tencent Apps (腾讯系)
@@ -272,9 +275,9 @@ def check_app_installed(app_name: str, wda_url: str = "http://localhost:8100") -
             return data.get("resultCount", 0) > 0
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.error("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error checking app installation: {e}")
+        logger.error(f"Error checking app installation: {e}")
 
     return False
 
@@ -302,9 +305,9 @@ def get_app_info_from_itunes(bundle_id: str) -> dict | None:
                 return results[0]
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.error("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error fetching app info: {e}")
+        logger.error(f"Error fetching app info: {e}")
 
     return None
 
@@ -332,8 +335,8 @@ def get_app_info_by_id(app_store_id: str) -> dict | None:
                 return results[0]
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.error("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error fetching app info by ID: {e}")
+        logger.error(f"Error fetching app info by ID: {e}")
 
     return None

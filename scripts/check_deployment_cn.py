@@ -3,6 +3,9 @@ import json
 import os
 
 from openai import OpenAI
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -60,7 +63,7 @@ if __name__ == "__main__":
 
     # 读取测试消息
     if not os.path.exists(args.messages_file):
-        print(f"错误: 消息文件 {args.messages_file} 不存在")
+        logger.info(f"错误: 消息文件 {args.messages_file} 不存在")
         exit(1)
 
     with open(args.messages_file) as f:
@@ -70,11 +73,11 @@ if __name__ == "__main__":
     api_key = args.apikey
     model = args.model
 
-    print(f"开始测试模型推理...")
-    print(f"Base URL: {base_url}")
-    print(f"Model: {model}")
-    print(f"Messages file: {args.messages_file}")
-    print("=" * 80)
+    logger.info(f"开始测试模型推理...")
+    logger.info(f"Base URL: {base_url}")
+    logger.info(f"Model: {model}")
+    logger.info(f"Messages file: {args.messages_file}")
+    logger.info("=" * 80)
 
     try:
         client = OpenAI(
@@ -92,24 +95,24 @@ if __name__ == "__main__":
             stream=False,
         )
 
-        print("\n模型推理结果:")
-        print("=" * 80)
-        print(response.choices[0].message.content)
-        print("=" * 80)
+        logger.info("\n模型推理结果:")
+        logger.info("=" * 80)
+        logger.info(response.choices[0].message.content)
+        logger.info("=" * 80)
 
         if response.usage:
-            print(f"\n统计信息:")
-            print(f"  - Prompt tokens: {response.usage.prompt_tokens}")
-            print(f"  - Completion tokens: {response.usage.completion_tokens}")
-            print(f"  - Total tokens: {response.usage.total_tokens}")
+            logger.info(f"\n统计信息:")
+            logger.info(f"  - Prompt tokens: {response.usage.prompt_tokens}")
+            logger.info(f"  - Completion tokens: {response.usage.completion_tokens}")
+            logger.info(f"  - Total tokens: {response.usage.total_tokens}")
 
-        print(f"\n请根据上述推理结果判断模型部署是否符合预期。")
+        logger.info(f"\n请根据上述推理结果判断模型部署是否符合预期。")
 
     except Exception as e:
-        print(f"\n调用 API 时发生错误:")
-        print(f"错误类型: {type(e).__name__}")
-        print(f"错误信息: {str(e)}")
-        print(
+        logger.info(f"\n调用 API 时发生错误:")
+        logger.info(f"错误类型: {type(e).__name__}")
+        logger.info(f"错误信息: {str(e)}")
+        logger.info(
             "\n提示: 请检查 base_url、api_key 和 model 参数是否正确，以及服务是否正在运行。"
         )
         exit(1)

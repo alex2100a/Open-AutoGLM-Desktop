@@ -10,6 +10,9 @@ from typing import Any, Callable
 from phone_agent.config.timing import TIMING_CONFIG
 from phone_agent.device_factory import get_device_factory
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 @dataclass
 class ActionResult:
@@ -342,7 +345,7 @@ def parse_action(response: str) -> dict[str, Any]:
     Raises:
         ValueError: If the response cannot be parsed.
     """
-    print(f"Parsing action: {response}")
+    logger.info(f"Parsing action: {response}")
     try:
         response = response.strip()
         if response.startswith('do(action="Type"') or response.startswith(

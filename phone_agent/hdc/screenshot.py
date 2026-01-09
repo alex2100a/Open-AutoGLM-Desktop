@@ -12,6 +12,9 @@ from typing import Tuple
 from PIL import Image
 from phone_agent.hdc.connection import _run_hdc_command
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 @dataclass
 class Screenshot:
@@ -97,7 +100,7 @@ def get_screenshot(device_id: str | None = None, timeout: int = 10) -> Screensho
         )
 
     except Exception as e:
-        print(f"Screenshot error: {e}")
+        logger.info(f"Screenshot error: {e}")
         return _create_fallback_screenshot(is_sensitive=False)
 
 

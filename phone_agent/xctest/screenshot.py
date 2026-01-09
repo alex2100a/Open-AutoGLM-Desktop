@@ -9,6 +9,9 @@ from dataclasses import dataclass
 from io import BytesIO
 
 from PIL import Image
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -96,9 +99,9 @@ def _get_screenshot_wda(
                 )
 
     except ImportError:
-        print("Note: requests library not installed. Install: pip install requests")
+        logger.info("Note: requests library not installed. Install: pip install requests")
     except Exception as e:
-        print(f"WDA screenshot failed: {e}")
+        logger.info(f"WDA screenshot failed: {e}")
 
     return None
 
@@ -147,11 +150,11 @@ def _get_screenshot_idevice(
             )
 
     except FileNotFoundError:
-        print(
+        logger.info(
             "Note: idevicescreenshot not found. Install: brew install libimobiledevice"
         )
     except Exception as e:
-        print(f"idevicescreenshot failed: {e}")
+        logger.info(f"idevicescreenshot failed: {e}")
 
     return None
 
@@ -202,7 +205,7 @@ def save_screenshot(
         img.save(file_path)
         return True
     except Exception as e:
-        print(f"Error saving screenshot: {e}")
+        logger.info(f"Error saving screenshot: {e}")
         return False
 
 

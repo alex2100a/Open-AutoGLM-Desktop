@@ -4,6 +4,9 @@ import subprocess
 import time
 from dataclasses import dataclass
 from enum import Enum
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class ConnectionType(Enum):
@@ -104,12 +107,12 @@ class XCTestConnection:
             return devices
 
         except FileNotFoundError:
-            print(
+            logger.info(
                 "Error: idevice_id not found. Install libimobiledevice: brew install libimobiledevice"
             )
             return []
         except Exception as e:
-            print(f"Error listing devices: {e}")
+            logger.info(f"Error listing devices: {e}")
             return []
 
     def _get_device_details(self, udid: str) -> dict[str, str]:
@@ -211,7 +214,7 @@ class XCTestConnection:
             )
             return response.status_code == 200
         except ImportError:
-            print(
+            logger.info(
                 "Error: requests library not found. Install it: pip install requests"
             )
             return False
@@ -325,7 +328,7 @@ class XCTestConnection:
             return result.stdout.strip() or None
 
         except Exception as e:
-            print(f"Error getting device name: {e}")
+            logger.info(f"Error getting device name: {e}")
             return None
 
     def restart_wda(self) -> tuple[bool, str]:

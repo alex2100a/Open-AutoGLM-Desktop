@@ -12,6 +12,10 @@ except ImportError:
 from phone_agent.config.apps_desktop import get_executable_path
 from phone_agent.config.timing import TIMING_CONFIG
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
+
 
 def tap(x: int, y: int, delay: float | None = None) -> None:
     """
@@ -258,7 +262,7 @@ def close_window(hwnd: int | None = None) -> bool:
             time.sleep(0.5)
             return True
         except Exception as e:
-            print(f"关闭窗口失败: {e}")
+            logger.error(f"关闭窗口失败: {e}")
             return False
     else:
         # macOS/Linux: 使用快捷键
@@ -300,7 +304,7 @@ def minimize_window(hwnd: int | None = None) -> bool:
         except ImportError:
             pass
         except Exception as e:
-            print(f"最小化窗口失败: {e}")
+            logger.error(f"最小化窗口失败: {e}")
             return False
     else:
         # 使用快捷键
@@ -344,7 +348,7 @@ def maximize_window(hwnd: int | None = None) -> bool:
         except ImportError:
             pass
         except Exception as e:
-            print(f"最大化窗口失败: {e}")
+            logger.error(f"最大化窗口失败: {e}")
             return False
     else:
         # 使用快捷键
@@ -421,7 +425,7 @@ def launch_app(app_name: str, mode: str = "reuse") -> bool:
         time.sleep(TIMING_CONFIG.device.default_launch_delay)
         return True
     except Exception as e:
-        print(f"启动应用失败: {e}")
+        logger.error(f"启动应用失败: {e}")
         return False
 
 

@@ -9,6 +9,9 @@ from typing import Optional
 
 from phone_agent.config.timing import TIMING_CONFIG
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 # Global flag to control HDC command output
 _HDC_VERBOSE = os.getenv("HDC_VERBOSE", "false").lower() in ("true", "1", "yes")
@@ -26,14 +29,14 @@ def _run_hdc_command(cmd: list, **kwargs) -> subprocess.CompletedProcess:
         CompletedProcess result.
     """
     if _HDC_VERBOSE:
-        print(f"[HDC] Running command: {' '.join(cmd)}")
+        logger.info(f"[HDC] Running command: {' '.join(cmd)}")
 
     result = subprocess.run(cmd, **kwargs)
 
     if _HDC_VERBOSE and result.returncode != 0:
-        print(f"[HDC] Command failed with return code {result.returncode}")
+        logger.info(f"[HDC] Command failed with return code {result.returncode}")
         if hasattr(result, 'stderr') and result.stderr:
-            print(f"[HDC] Error: {result.stderr}")
+            logger.info(f"[HDC] Error: {result.stderr}")
 
     return result
 
@@ -206,7 +209,7 @@ class HDCConnection:
             return devices
 
         except Exception as e:
-            print(f"Error listing devices: {e}")
+            logger.info(f"Error listing devices: {e}")
             return []
 
     def get_device_info(self, device_id: str | None = None) -> DeviceInfo | None:
@@ -327,7 +330,7 @@ class HDCConnection:
             return None
 
         except Exception as e:
-            print(f"Error getting device IP: {e}")
+            logger.info(f"Error getting device IP: {e}")
             return None
 
     def restart_server(self) -> tuple[bool, str]:

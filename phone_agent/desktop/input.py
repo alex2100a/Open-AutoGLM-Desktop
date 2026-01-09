@@ -12,6 +12,10 @@ except ImportError:
 
 from phone_agent.config.timing import TIMING_CONFIG
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
+
 
 def type_text(text: str, interval: float = 0.05) -> None:
     """
@@ -76,7 +80,7 @@ def _type_text_via_clipboard(text: str) -> None:
 
         time.sleep(TIMING_CONFIG.action.text_input_delay)
     except Exception as e:
-        print(f"剪贴板输入失败: {e}，尝试直接输入")
+        logger.error(f"剪贴板输入失败: {e}，尝试直接输入")
         if pyautogui:
             pyautogui.write(text, interval=0.1)
 

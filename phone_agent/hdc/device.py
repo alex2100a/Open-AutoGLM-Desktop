@@ -9,6 +9,9 @@ from phone_agent.config.apps_harmonyos import APP_ABILITIES, APP_PACKAGES
 from phone_agent.config.timing import TIMING_CONFIG
 from phone_agent.hdc.connection import _run_hdc_command
 import re
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 def get_current_app(device_id: str | None = None) -> str:
     """
@@ -30,7 +33,7 @@ def get_current_app(device_id: str | None = None) -> str:
         encoding="utf-8"
     )
     output = result.stdout
-    # print(output)
+    # logger.info(output)
     if not output:
         raise ValueError("No output from aa dump")
 
@@ -71,9 +74,9 @@ def get_current_app(device_id: str | None = None) -> str:
             if package == foreground_bundle:
                 return app_name
         # If bundle is found but not in our known apps, return the bundle name
-        print(f'Bundle is found but not in our known apps: {foreground_bundle}')
+        logger.info(f'Bundle is found but not in our known apps: {foreground_bundle}')
         return foreground_bundle
-    print(f'No bundle is found')
+    logger.info(f'No bundle is found')
     return "System Home"
 
 
@@ -270,8 +273,8 @@ def launch_app(
         delay = TIMING_CONFIG.device.default_launch_delay
 
     if app_name not in APP_PACKAGES:
-        print(f"[HDC] App '{app_name}' not found in HarmonyOS app list")
-        print(f"[HDC] Available apps: {', '.join(sorted(APP_PACKAGES.keys())[:10])}...")
+        logger.info(f"[HDC] App '{app_name}' not found in HarmonyOS app list")
+        logger.info(f"[HDC] Available apps: {', '.join(sorted(APP_PACKAGES.keys())[:10])}...")
         return False
 
     hdc_prefix = _get_hdc_prefix(device_id)
@@ -307,4 +310,4 @@ def _get_hdc_prefix(device_id: str | None) -> list:
     return ["hdc"]
 
 if __name__ == "__main__":
-    print(get_current_app())
+    logger.info(get_current_app())

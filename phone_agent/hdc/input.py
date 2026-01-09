@@ -6,6 +6,9 @@ from typing import Optional
 
 from phone_agent.hdc.connection import _run_hdc_command
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 def type_text(text: str, device_id: str | None = None) -> None:
     """
@@ -47,7 +50,7 @@ def type_text(text: str, device_id: str | None = None) -> None:
                         text=True,
                     )
                 except Exception as e:
-                    print(f"[HDC] ENTER keyEvent failed: {e}")
+                    logger.info(f"[HDC] ENTER keyEvent failed: {e}")
     else:
         # Single line text - original logic
         # Escape special characters for shell (keep quotes for proper text handling)

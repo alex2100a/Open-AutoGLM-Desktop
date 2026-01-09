@@ -18,9 +18,9 @@ logger = get_logger(__name__)
 def main(lang: str = "cn"):
     msgs = get_messages(lang)
 
-    print("=" * 60)
-    print("Phone Agent - Thinking Demo")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("Phone Agent - Thinking Demo")
+    logger.info("=" * 60)
 
     # Configure model
     model_config = ModelConfig(
@@ -43,12 +43,12 @@ def main(lang: str = "cn"):
     )
 
     # Execute task
-    print(f"\n📱 {msgs['starting_task']}...\n")
+    logger.info(f"\n📱 {msgs['starting_task']}...\n")
     result = agent.run("打开小红书搜索美食攻略")
 
-    print("\n" + "=" * 60)
-    print(f"📊 {msgs['final_result']}: {result}")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info(f"📊 {msgs['final_result']}: {result}")
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,9 @@ from typing import Optional
 
 from phone_agent.config.timing import TIMING_CONFIG
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 class ConnectionType(Enum):
     """Type of ADB connection."""
@@ -169,7 +172,7 @@ class ADBConnection:
             return devices
 
         except Exception as e:
-            print(f"Error listing devices: {e}")
+            logger.error(f"Error listing devices: {e}")
             return []
 
     def get_device_info(self, device_id: str | None = None) -> DeviceInfo | None:
@@ -299,7 +302,7 @@ class ADBConnection:
             return None
 
         except Exception as e:
-            print(f"Error getting device IP: {e}")
+            logger.error(f"Error getting device IP: {e}")
             return None
 
     def restart_server(self) -> tuple[bool, str]:
