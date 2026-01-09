@@ -10,6 +10,7 @@ class DeviceType(Enum):
     ADB = "adb"
     HDC = "hdc"
     IOS = "ios"
+    DESKTOP = "desktop"  # 桌面自动化
 
 
 class DeviceFactory:

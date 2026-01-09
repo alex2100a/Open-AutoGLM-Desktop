@@ -4,6 +4,15 @@ openai>=2.9.0
 # For iOS Support
 requests>=2.31.0
 
+# For Desktop Automation
+pyautogui>=0.9.54
+mss>=9.0.1
+psutil>=5.9.0
+pyperclip>=1.8.2
+
+# Optional: For Windows enhanced window management
+# pywin32>=306; sys_platform == "win32"
+
 # For Model Deployment
 
 ## After installing sglang or vLLM, please run pip install -U transformers again to upgrade to 5.0.0rc0.
