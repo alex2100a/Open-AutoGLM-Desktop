@@ -146,12 +146,9 @@ class ModelClient:
         # Parse thinking and action from response
         thinking, action = self._parse_response(raw_content)
         # thinking = re.sub(r'<think>(.*?)</think>', r'\1', thinking)
-        thinking = re.sub(r'<.*?>', r'\1', thinking)
+        thinking = re.sub(r'<.*?>', '', thinking)
         # action = re.sub(r'<answer>(.*?)</answer>', r'\1', action)
-        action = re.sub(r'<.*?>', r'\1', action)
-        action = re.sub(r'<do(action=".*?)>', r'\1', action)
-        action = re.sub(r'<finish(message=".*?)>', r'\1', action)
-
+        action = re.sub(r'<.*?>', r'', action)
         # Print performance metrics
         lang = self.config.lang
         print()
