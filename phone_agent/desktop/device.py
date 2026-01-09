@@ -185,12 +185,194 @@ def get_current_app() -> str:
     return "Desktop"
 
 
-def launch_app(app_name: str) -> bool:
+def get_all_windows() -> list[dict]:
     """
-    启动应用程序。
+    获取所有打开的窗口列表。
+
+    Returns:
+        窗口信息列表。
+    """
+    from phone_agent.desktop.connection import get_all_windows as _get_all_windows
+    return _get_all_windows()
+
+
+def find_window_by_app(app_name: str) -> dict | None:
+    """
+    查找应用程序的窗口。
+
+    Args:
+        app_name: 应用名称。
+
+    Returns:
+        窗口信息字典，如果未找到返回 None。
+    """
+    from phone_agent.desktop.connection import find_window_by_app as _find_window_by_app
+    return _find_window_by_app(app_name)
+
+
+def switch_to_window(window_title: str | None = None, process_name: str | None = None) -> bool:
+    """
+    切换到指定窗口。
+
+    Args:
+        window_title: 窗口标题。
+        process_name: 进程名称。
+
+    Returns:
+        True 如果切换成功。
+    """
+    from phone_agent.desktop.connection import switch_to_window as _switch_to_window
+    return _switch_to_window(window_title, process_name)
+
+
+def close_window(hwnd: int | None = None) -> bool:
+    """
+    关闭指定窗口或当前窗口。
+
+    Args:
+        hwnd: 窗口句柄（Windows），如果为 None 则关闭当前窗口。
+
+    Returns:
+        True 如果关闭成功。
+    """
+    if pyautogui is None:
+        raise ImportError("pyautogui 未安装，请运行: pip install pyautogui")
+
+    system = platform.system().lower()
+
+    if system == "windows":
+        try:
+            import win32gui
+            import win32con
+
+            if hwnd is None:
+                hwnd = win32gui.GetForegroundWindow()
+
+            if hwnd:
+                win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+                time.sleep(0.5)
+                return True
+        except ImportError:
+            # 回退到 Alt+F4
+            pyautogui.hotkey("alt", "f4")
+            time.sleep(0.5)
+            return True
+        except Exception as e:
+            print(f"关闭窗口失败: {e}")
+            return False
+    else:
+        # macOS/Linux: 使用快捷键
+        if system == "darwin":
+            pyautogui.hotkey("command", "w")
+        else:
+            pyautogui.hotkey("alt", "f4")
+        time.sleep(0.5)
+        return True
+
+
+def minimize_window(hwnd: int | None = None) -> bool:
+    """
+    最小化窗口。
+
+    Args:
+        hwnd: 窗口句柄（Windows），如果为 None 则最小化当前窗口。
+
+    Returns:
+        True 如果成功。
+    """
+    if pyautogui is None:
+        raise ImportError("pyautogui 未安装，请运行: pip install pyautogui")
+
+    system = platform.system().lower()
+
+    if system == "windows":
+        try:
+            import win32gui
+            import win32con
+
+            if hwnd is None:
+                hwnd = win32gui.GetForegroundWindow()
+
+            if hwnd:
+                win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
+                time.sleep(0.3)
+                return True
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"最小化窗口失败: {e}")
+            return False
+    else:
+        # 使用快捷键
+        if system == "darwin":
+            pyautogui.hotkey("command", "m")
+        else:
+            pyautogui.hotkey("super", "down")
+        time.sleep(0.3)
+        return True
+
+    return False
+
+
+def maximize_window(hwnd: int | None = None) -> bool:
+    """
+    最大化窗口。
+
+    Args:
+        hwnd: 窗口句柄（Windows），如果为 None 则最大化当前窗口。
+
+    Returns:
+        True 如果成功。
+    """
+    if pyautogui is None:
+        raise ImportError("pyautogui 未安装，请运行: pip install pyautogui")
+
+    system = platform.system().lower()
+
+    if system == "windows":
+        try:
+            import win32gui
+            import win32con
+
+            if hwnd is None:
+                hwnd = win32gui.GetForegroundWindow()
+
+            if hwnd:
+                win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
+                time.sleep(0.3)
+                return True
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"最大化窗口失败: {e}")
+            return False
+    else:
+        # 使用快捷键
+        if system == "darwin":
+            pyautogui.hotkey("command", "ctrl", "f")
+        else:
+            pyautogui.hotkey("super", "up")
+        time.sleep(0.3)
+        return True
+
+    return False
+
+
+def minimize_all_windows() -> None:
+    """最小化所有窗口（显示桌面）。"""
+    home()
+
+
+def launch_app(app_name: str, mode: str = "reuse") -> bool:
+    """
+    启动应用程序（支持多种模式）。
 
     Args:
         app_name: 应用名称（必须在 apps_desktop.py 中配置）。
+        mode: 启动模式
+            - reuse: 如果已打开，切换到该窗口（推荐，更快）
+            - restart: 关闭已有窗口，重新启动
+            - new: 启动新实例（不关闭已有）
 
     Returns:
         True 如果应用启动成功，False 如果应用未找到。
@@ -201,6 +383,28 @@ def launch_app(app_name: str) -> bool:
     if not executable:
         return False
 
+    # 查找是否已有窗口
+    existing_window = find_window_by_app(app_name)
+
+    if existing_window and mode == "reuse":
+        # 复用已有实例，切换到该窗口
+        process_name = existing_window.get("process", "")
+        return switch_to_window(process_name=process_name)
+    elif existing_window and mode == "restart":
+        # 关闭已有窗口
+        if system == "windows":
+            hwnd = existing_window.get("hwnd")
+            if hwnd:
+                close_window(hwnd)
+                time.sleep(1.0)  # 等待窗口关闭
+        else:
+            # 切换到窗口然后关闭
+            switch_to_window(process_name=existing_window.get("process", ""))
+            time.sleep(0.5)
+            close_window()
+            time.sleep(1.0)
+
+    # 启动应用
     try:
         if system == "windows":
             # Windows: 直接启动可执行文件

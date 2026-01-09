@@ -7,15 +7,19 @@ from typing import Any, Callable
 from phone_agent.desktop import (
     back,
     clear_text,
+    close_window,
     double_tap,
     get_current_app,
     home,
     hotkey,
     launch_app,
     long_press,
+    maximize_window,
+    minimize_window,
     press_key,
     right_click,
     scroll,
+    switch_to_window,
     swipe,
     tap,
     type_text,
@@ -47,10 +51,12 @@ class DesktopActionHandler:
         display_id: int | None = None,
         confirmation_callback: Callable[[str], bool] | None = None,
         takeover_callback: Callable[[str], None] | None = None,
+        app_launch_mode: str = "reuse",
     ):
         self.display_id = display_id
         self.confirmation_callback = confirmation_callback or self._default_confirmation
         self.takeover_callback = takeover_callback or self._default_takeover
+        self.app_launch_mode = app_launch_mode
 
     def execute(
         self, action: dict[str, Any], screen_width: int, screen_height: int
@@ -139,7 +145,10 @@ class DesktopActionHandler:
         if not app_name:
             return ActionResult(False, False, "未指定应用名称")
 
-        success = launch_app(app_name)
+        # 支持 mode 参数：reuse | restart | new
+        # 如果 action 中没有指定 mode，使用配置的默认值
+        mode = action.get("mode", self.app_launch_mode)
+        success = launch_app(app_name, mode=mode)
         if success:
             return ActionResult(True, False)
         return ActionResult(False, False, f"应用未找到: {app_name}")
@@ -302,21 +311,41 @@ class DesktopActionHandler:
         hotkey(*keys)
         return ActionResult(True, False)
 
+    def _handle_switch_window(
+        self, action: dict, width: int, height: int
+    ) -> ActionResult:
+        """处理切换窗口操作（桌面特有）。"""
+        app_name = action.get("app")
+        window_title = action.get("window_title")
+
+        if not app_name and not window_title:
+            return ActionResult(False, False, "未指定应用名称或窗口标题")
+
+        # 如果指定了应用名，尝试先启动（如果未打开）
+        if app_name:
+            from phone_agent.desktop.device import find_window_by_app
+
+            existing_window = find_window_by_app(app_name)
+            if not existing_window:
+                # 应用未打开，先启动
+                launch_app(app_name, mode="reuse")
+                time.sleep(1.0)
+
+        success = switch_to_window(window_title=window_title, process_name=app_name)
+        if success:
+            return ActionResult(True, False)
+        return ActionResult(False, False, f"无法切换到窗口: {app_name or window_title}")
+
     def _handle_minimize(
         self, action: dict, width: int, height: int
     ) -> ActionResult:
         """处理最小化窗口操作（桌面特有）。"""
         try:
-            import platform
-
-            system = platform.system().lower()
-            if system == "windows":
-                hotkey("win", "down")
-            elif system == "darwin":  # macOS
-                hotkey("command", "m")
-            elif system == "linux":
-                hotkey("super", "down")
-            return ActionResult(True, False)
+            hwnd = action.get("hwnd")
+            success = minimize_window(hwnd)
+            if success:
+                return ActionResult(True, False)
+            return ActionResult(False, False, "最小化失败")
         except Exception as e:
             return ActionResult(False, False, f"最小化失败: {e}")
 
@@ -325,16 +354,11 @@ class DesktopActionHandler:
     ) -> ActionResult:
         """处理最大化窗口操作（桌面特有）。"""
         try:
-            import platform
-
-            system = platform.system().lower()
-            if system == "windows":
-                hotkey("win", "up")
-            elif system == "darwin":  # macOS
-                hotkey("command", "ctrl", "f")
-            elif system == "linux":
-                hotkey("super", "up")
-            return ActionResult(True, False)
+            hwnd = action.get("hwnd")
+            success = maximize_window(hwnd)
+            if success:
+                return ActionResult(True, False)
+            return ActionResult(False, False, "最大化失败")
         except Exception as e:
             return ActionResult(False, False, f"最大化失败: {e}")
 
@@ -343,16 +367,11 @@ class DesktopActionHandler:
     ) -> ActionResult:
         """处理关闭窗口操作（桌面特有）。"""
         try:
-            import platform
-
-            system = platform.system().lower()
-            if system == "windows":
-                hotkey("alt", "f4")
-            elif system == "darwin":  # macOS
-                hotkey("command", "w")
-            elif system == "linux":
-                hotkey("alt", "f4")
-            return ActionResult(True, False)
+            hwnd = action.get("hwnd")
+            success = close_window(hwnd)
+            if success:
+                return ActionResult(True, False)
+            return ActionResult(False, False, "关闭窗口失败")
         except Exception as e:
             return ActionResult(False, False, f"关闭窗口失败: {e}")
 

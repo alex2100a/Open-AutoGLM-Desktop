@@ -8,13 +8,20 @@ from phone_agent.desktop.connection import (
 )
 from phone_agent.desktop.device import (
     back,
+    close_window,
     double_tap,
+    find_window_by_app,
+    get_all_windows,
     get_current_app,
     home,
     launch_app,
     long_press,
+    maximize_window,
+    minimize_all_windows,
+    minimize_window,
     right_click,
     scroll,
+    switch_to_window,
     swipe,
     tap,
 )
@@ -45,6 +52,14 @@ __all__ = [
     "home",
     "long_press",
     "launch_app",
+    # Window management
+    "get_all_windows",
+    "find_window_by_app",
+    "switch_to_window",
+    "close_window",
+    "minimize_window",
+    "maximize_window",
+    "minimize_all_windows",
     # Connection management
     "DesktopConnection",
     "DisplayInfo",

@@ -259,6 +259,48 @@ def parse_args() -> argparse.Namespace:
         help="系统提示语言 (cn 或 en, 默认: cn)",
     )
 
+    # 应用启动模式
+    parser.add_argument(
+        "--app-mode",
+        type=str,
+        choices=["reuse", "restart", "new"],
+        default=os.getenv("PHONE_AGENT_APP_MODE", "reuse"),
+        help="应用启动模式: reuse=复用已有(推荐), restart=重启, new=新开",
+    )
+
+    # 开始状态配置
+    parser.add_argument(
+        "--start-from-desktop",
+        action="store_true",
+        help="任务开始前先回到桌面",
+    )
+
+    parser.add_argument(
+        "--minimize-all",
+        action="store_true",
+        help="任务开始前最小化所有窗口",
+    )
+
+    # 调试选项
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="启用详细调试输出",
+    )
+
+    parser.add_argument(
+        "--save-screenshots",
+        action="store_true",
+        help="保存每步截图到 ./screenshots 目录",
+    )
+
+    parser.add_argument(
+        "--screenshot-dir",
+        type=str,
+        default="./screenshots",
+        help="截图保存目录（默认: ./screenshots）",
+    )
+
     parser.add_argument(
         "task",
         nargs="?",
@@ -338,6 +380,12 @@ def main():
         display_id=args.display_id,
         verbose=not args.quiet,
         lang=args.lang,
+        app_launch_mode=args.app_mode,
+        start_from_desktop=args.start_from_desktop,
+        minimize_all_before_start=args.minimize_all,
+        debug=args.debug,
+        save_screenshots=args.save_screenshots,
+        screenshot_dir=args.screenshot_dir,
     )
 
     agent = DesktopAgent(
@@ -354,6 +402,15 @@ def main():
     print(f"最大步数: {agent_config.max_steps}")
     print(f"语言: {agent_config.lang}")
     print(f"平台: {agent_config.platform}")
+    print(f"应用启动模式: {agent_config.app_launch_mode}")
+    if agent_config.start_from_desktop:
+        print(f"开始状态: 从桌面开始")
+    elif agent_config.minimize_all_before_start:
+        print(f"开始状态: 最小化所有窗口")
+    if agent_config.debug:
+        print(f"调试模式: 已启用")
+    if agent_config.save_screenshots:
+        print(f"截图保存: {agent_config.screenshot_dir}")
 
     # 显示显示器信息
     if agent_config.display_id is not None:

@@ -5,6 +5,11 @@ from phone_agent.config.apps_ios import APP_PACKAGES_IOS
 from phone_agent.config.i18n import get_message, get_messages
 from phone_agent.config.prompts_en import SYSTEM_PROMPT as SYSTEM_PROMPT_EN
 from phone_agent.config.prompts_zh import SYSTEM_PROMPT as SYSTEM_PROMPT_ZH
+
+try:
+    from phone_agent.config.prompts_desktop import SYSTEM_PROMPT as SYSTEM_PROMPT_DESKTOP
+except ImportError:
+    SYSTEM_PROMPT_DESKTOP = None
 from phone_agent.config.timing import (
     TIMING_CONFIG,
     ActionTimingConfig,
@@ -40,6 +45,7 @@ __all__ = [
     "SYSTEM_PROMPT",
     "SYSTEM_PROMPT_ZH",
     "SYSTEM_PROMPT_EN",
+    "SYSTEM_PROMPT_DESKTOP",
     "get_system_prompt",
     "get_messages",
     "get_message",
