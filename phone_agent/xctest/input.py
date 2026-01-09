@@ -1,6 +1,9 @@
 """Input utilities for iOS device text input via WebDriverAgent."""
 
 import time
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def _get_wda_session_url(wda_url: str, session_id: str | None, endpoint: str) -> str:
@@ -53,12 +56,12 @@ def type_text(
         )
 
         if response.status_code not in (200, 201):
-            print(f"Warning: Text input may have failed. Status: {response.status_code}")
+            logger.info("Warning: Text input may have failed. Status: %s", response.status_code)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error typing text: {e}")
+        logger.info("Error typing text: %s", e)
 
 
 def clear_text(
@@ -98,9 +101,9 @@ def clear_text(
         _clear_with_backspace(wda_url, session_id)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error clearing text: {e}")
+        logger.info("Error clearing text: %s", e)
 
 
 def _clear_with_backspace(
@@ -131,7 +134,7 @@ def _clear_with_backspace(
         )
 
     except Exception as e:
-        print(f"Error clearing with backspace: {e}")
+        logger.info("Error clearing with backspace: %s", e)
 
 
 def send_keys(
@@ -159,9 +162,9 @@ def send_keys(
         requests.post(url, json={"value": keys}, timeout=10, verify=False)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error sending keys: {e}")
+        logger.info("Error sending keys: %s", e)
 
 
 def press_enter(
@@ -200,9 +203,9 @@ def hide_keyboard(
         requests.post(url, timeout=10, verify=False)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error hiding keyboard: {e}")
+        logger.info("Error hiding keyboard: %s", e)
 
 
 def is_keyboard_shown(
@@ -263,9 +266,9 @@ def set_pasteboard(
         )
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error setting pasteboard: {e}")
+        logger.info("Error setting pasteboard: %s", e)
 
 
 def get_pasteboard(
@@ -292,8 +295,8 @@ def get_pasteboard(
             return data.get("value")
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error getting pasteboard: {e}")
+        logger.info("Error getting pasteboard: %s", e)
 
     return None

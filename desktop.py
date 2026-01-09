@@ -24,6 +24,9 @@ from phone_agent.agent_desktop import DesktopAgent, DesktopAgentConfig
 from phone_agent.config.apps_desktop import list_supported_apps
 from phone_agent.desktop import list_displays
 from phone_agent.model import ModelConfig
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def check_system_requirements() -> bool:
@@ -37,63 +40,63 @@ def check_system_requirements() -> bool:
     Returns:
         如果所有检查通过返回 True，否则返回 False。
     """
-    print("🔍 检查系统要求...")
-    print("-" * 50)
+    logger.info("🔍 检查系统要求...")
+    logger.info("-" * 50)
 
     all_passed = True
 
     # 检查 1: pyautogui
-    print("1. 检查 pyautogui 安装...", end=" ")
+    logger.info("1. 检查 pyautogui 安装...")
     try:
         import pyautogui
 
-        print("✅ OK")
+        logger.info("✅ OK")
     except ImportError:
-        print("❌ 失败")
-        print("   错误: pyautogui 未安装或不在 PATH 中。")
-        print("   解决方案: 安装 pyautogui:")
-        print("     pip install pyautogui")
+        logger.info("❌ 失败")
+        logger.info("   错误: pyautogui 未安装或不在 PATH 中。")
+        logger.info("   解决方案: 安装 pyautogui:")
+        logger.info("     pip install pyautogui")
         all_passed = False
 
     # 检查 2: mss (可选但推荐)
-    print("2. 检查 mss 安装（推荐）...", end=" ")
+    logger.info("2. 检查 mss 安装（推荐）...")
     try:
         import mss
 
-        print("✅ OK")
+        logger.info("✅ OK")
     except ImportError:
-        print("⚠️  未安装（可选）")
-        print("   提示: 安装 mss 可获得更好的截图性能:")
-        print("     pip install mss")
+        logger.info("⚠️  未安装（可选）")
+        logger.info("   提示: 安装 mss 可获得更好的截图性能:")
+        logger.info("     pip install mss")
 
     # 检查 3: 平台支持
-    print("3. 检查平台支持...", end=" ")
+    logger.info("3. 检查平台支持...")
     system = platform.system().lower()
     if system in ["windows", "darwin", "linux"]:
-        print(f"✅ OK ({system})")
+        logger.info("✅ OK (%s)", system)
     else:
-        print(f"⚠️  未知平台 ({system})")
-        print("   可能无法正常工作")
+        logger.info("⚠️  未知平台 (%s)", system)
+        logger.info("   可能无法正常工作")
 
     # Windows 特定检查
     if system == "windows":
-        print("4. 检查 Windows 特定库...", end=" ")
+        logger.info("4. 检查 Windows 特定库...")
         try:
             import win32gui
             import win32process
 
-            print("✅ OK (pywin32)")
+            logger.info("✅ OK (pywin32)")
         except ImportError:
-            print("⚠️  未安装（可选）")
-            print("   提示: 安装 pywin32 可获得更好的窗口管理:")
-            print("     pip install pywin32")
+            logger.info("⚠️  未安装（可选）")
+            logger.info("   提示: 安装 pywin32 可获得更好的窗口管理:")
+            logger.info("     pip install pywin32")
 
-    print("-" * 50)
+    logger.info("-" * 50)
 
     if all_passed:
-        print("✅ 所有系统检查通过！\n")
+        logger.info("✅ 所有系统检查通过！")
     else:
-        print("❌ 系统检查失败。请修复上述问题。")
+        logger.info("❌ 系统检查失败。请修复上述问题。")
 
     return all_passed
 
@@ -114,13 +117,13 @@ def check_model_api(base_url: str, model_name: str, api_key: str = "EMPTY") -> b
     Returns:
         如果所有检查通过返回 True，否则返回 False。
     """
-    print("🔍 检查模型 API...")
-    print("-" * 50)
+    logger.info("🔍 检查模型 API...")
+    logger.info("-" * 50)
 
     all_passed = True
 
     # 检查 1: 网络连接
-    print(f"1. 检查 API 连接 ({base_url})...", end=" ")
+    logger.info("1. 检查 API 连接 (%s)...", base_url)
     try:
         client = OpenAI(base_url=base_url, api_key=api_key, timeout=30.0)
 
@@ -133,38 +136,38 @@ def check_model_api(base_url: str, model_name: str, api_key: str = "EMPTY") -> b
         )
 
         if response.choices and len(response.choices) > 0:
-            print("✅ OK")
+            logger.info("✅ OK")
         else:
-            print("❌ 失败")
-            print("   错误: API 返回空响应")
+            logger.info("❌ 失败")
+            logger.info("   错误: API 返回空响应")
             all_passed = False
 
     except Exception as e:
-        print("❌ 失败")
+        logger.info("❌ 失败")
         error_msg = str(e)
 
         if "Connection refused" in error_msg or "Connection error" in error_msg:
-            print(f"   错误: 无法连接到 {base_url}")
-            print("   解决方案:")
-            print("     1. 检查模型服务器是否运行")
-            print("     2. 验证基础 URL 是否正确")
-            print(f"     3. 尝试: curl {base_url}/chat/completions")
+            logger.info("   错误: 无法连接到 %s", base_url)
+            logger.info("   解决方案:")
+            logger.info("     1. 检查模型服务器是否运行")
+            logger.info("     2. 验证基础 URL 是否正确")
+            logger.info("     3. 尝试: curl %s/chat/completions", base_url)
         elif "timed out" in error_msg.lower() or "timeout" in error_msg.lower():
-            print(f"   错误: 连接到 {base_url} 超时")
-            print("   解决方案:")
-            print("     1. 检查网络连接")
-            print("     2. 验证服务器是否响应")
+            logger.info("   错误: 连接到 %s 超时", base_url)
+            logger.info("   解决方案:")
+            logger.info("     1. 检查网络连接")
+            logger.info("     2. 验证服务器是否响应")
         else:
-            print(f"   错误: {error_msg}")
+            logger.info("   错误: %s", error_msg)
 
         all_passed = False
 
-    print("-" * 50)
+    logger.info("-" * 50)
 
     if all_passed:
-        print("✅ 模型 API 检查通过！\n")
+        logger.info("✅ 模型 API 检查通过！")
     else:
-        print("❌ 模型 API 检查失败。请修复上述问题。")
+        logger.info("❌ 模型 API 检查失败。请修复上述问题。")
 
     return all_passed
 
@@ -322,16 +325,16 @@ def handle_display_commands(args) -> bool:
     if args.list_displays:
         displays = list_displays()
         if not displays:
-            print("未检测到显示器。")
+            logger.info("未检测到显示器。")
         else:
-            print("检测到的显示器:")
-            print("-" * 70)
+            logger.info("检测到的显示器:")
+            logger.info("-" * 70)
             for display in displays:
                 primary_mark = " (主显示器)" if display.is_primary else ""
-                print(f"  ✓ 显示器 {display.display_id}{primary_mark}")
-                print(f"    分辨率: {display.width} x {display.height}")
-                print(f"    位置: ({display.x}, {display.y})")
-                print("-" * 70)
+                logger.info("  ✓ 显示器 %s%s", display.display_id, primary_mark)
+                logger.info("    分辨率: %s x %s", display.width, display.height)
+                logger.info("    位置: (%s, %s)", display.x, display.y)
+                logger.info("-" * 70)
         return True
 
     return False
@@ -349,10 +352,10 @@ def main():
         else:
             platform_name = system
 
-        print(f"支持的应用 ({platform_name}):")
+        logger.info("支持的应用 (%s):", platform_name)
         apps = list_supported_apps(platform_name)
         for app in sorted(apps):
-            print(f"  - {app}")
+            logger.info("  - %s", app)
         return
 
     # 处理显示器命令
@@ -394,65 +397,76 @@ def main():
     )
 
     # 打印标题
-    print("=" * 50)
-    print("桌面自动化 - AI 驱动的桌面自动化")
-    print("=" * 50)
-    print(f"模型: {model_config.model_name}")
-    print(f"基础 URL: {model_config.base_url}")
-    print(f"最大步数: {agent_config.max_steps}")
-    print(f"语言: {agent_config.lang}")
-    print(f"平台: {agent_config.platform}")
-    print(f"应用启动模式: {agent_config.app_launch_mode}")
+    logger.info("=" * 50)
+    logger.info("桌面自动化 - AI 驱动的桌面自动化")
+    logger.info("=" * 50)
+    logger.info("模型: %s", model_config.model_name)
+    logger.info("基础 URL: %s", model_config.base_url)
+    logger.info("最大步数: %s", agent_config.max_steps)
+    logger.info("语言: %s", agent_config.lang)
+    logger.info("平台: %s", agent_config.platform)
+    logger.info("应用启动模式: %s", agent_config.app_launch_mode)
     if agent_config.start_from_desktop:
-        print(f"开始状态: 从桌面开始")
+        logger.info("开始状态: 从桌面开始")
     elif agent_config.minimize_all_before_start:
-        print(f"开始状态: 最小化所有窗口")
+        logger.info("开始状态: 最小化所有窗口")
     if agent_config.debug:
-        print(f"调试模式: 已启用")
+        logger.info("调试模式: 已启用")
     if agent_config.save_screenshots:
-        print(f"截图保存: {agent_config.screenshot_dir}")
+        logger.info("截图保存: %s", agent_config.screenshot_dir)
 
     # 显示显示器信息
     if agent_config.display_id is not None:
-        print(f"显示器: {agent_config.display_id}")
+        logger.info("显示器: %s", agent_config.display_id)
     else:
         displays = list_displays()
         if displays:
             primary = next((d for d in displays if d.is_primary), displays[0])
-            print(f"显示器: {primary.display_id} (主显示器, {primary.width}x{primary.height})")
+            logger.info("显示器: %s (主显示器, %sx%s)", primary.display_id, primary.width, primary.height)
 
-    print("=" * 50)
+    logger.info("=" * 50)
 
     # 运行提供的任务或进入交互模式
     if args.task:
-        print(f"\n任务: {args.task}\n")
+        logger.info("")
+        logger.info("任务: %s", args.task)
+        logger.info("")
         result = agent.run(args.task)
-        print(f"\n结果: {result}")
+        logger.info("")
+        logger.info("结果: %s", result)
     else:
         # 交互模式
-        print("\n进入交互模式。输入 'quit' 退出。\n")
+        logger.info("")
+        logger.info("进入交互模式。输入 'quit' 退出。")
+        logger.info("")
 
         while True:
             try:
                 task = input("输入您的任务: ").strip()
 
                 if task.lower() in ("quit", "exit", "q"):
-                    print("再见！")
+                    logger.info("再见！")
                     break
 
                 if not task:
                     continue
 
-                print()
+                logger.info("")
                 result = agent.run(task)
-                print(f"\n结果: {result}\n")
+                logger.info("")
+                logger.info("结果: %s", result)
+                logger.info("")
                 agent.reset()
 
             except KeyboardInterrupt:
-                print("\n\n中断。再见！")
+                logger.info("")
+                logger.info("")
+                logger.info("中断。再见！")
                 break
             except Exception as e:
-                print(f"\n错误: {e}\n")
+                logger.info("")
+                logger.info("错误: %s", e)
+                logger.info("")
 
 
 if __name__ == "__main__":

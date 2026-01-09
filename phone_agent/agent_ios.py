@@ -11,6 +11,9 @@ from phone_agent.config import get_messages, get_system_prompt
 from phone_agent.model import ModelClient, ModelConfig
 from phone_agent.model.client import MessageBuilder
 from phone_agent.xctest import XCTestConnection, get_current_app, get_screenshot
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -85,9 +88,9 @@ class IOSPhoneAgent:
             if success and session_id != "session_started":
                 self.agent_config.session_id = session_id
                 if self.agent_config.verbose:
-                    print(f"✅ Created WDA session: {session_id}")
+                    logger.info("✅ Created WDA session: %s", session_id)
             elif self.agent_config.verbose:
-                print(f"⚠️  Using default WDA session (no explicit session ID)")
+                logger.info("⚠️  Using default WDA session (no explicit session ID)")
 
         self.action_handler = IOSActionHandler(
             wda_url=self.agent_config.wda_url,
@@ -216,14 +219,15 @@ class IOSPhoneAgent:
         if self.agent_config.verbose:
             # Print thinking process
             msgs = get_messages(self.agent_config.lang)
-            print("\n" + "=" * 50)
-            print(f"💭 {msgs['thinking']}:")
-            print("-" * 50)
-            print(response.thinking)
-            print("-" * 50)
-            print(f"🎯 {msgs['action']}:")
-            print(json.dumps(action, ensure_ascii=False, indent=2))
-            print("=" * 50 + "\n")
+            logger.info("")
+            logger.info("=" * 50)
+            logger.info("💭 %s:", msgs['thinking'])
+            logger.info("-" * 50)
+            logger.info(response.thinking)
+            logger.info("-" * 50)
+            logger.info("🎯 %s:", msgs['action'])
+            logger.info(json.dumps(action, ensure_ascii=False, indent=2))
+            logger.info("=" * 50 + "\n")
 
         # Remove image from context to save space
         self._context[-1] = MessageBuilder.remove_images_from_message(self._context[-1])
@@ -252,11 +256,12 @@ class IOSPhoneAgent:
 
         if finished and self.agent_config.verbose:
             msgs = get_messages(self.agent_config.lang)
-            print("\n" + "🎉 " + "=" * 48)
-            print(
-                f"✅ {msgs['task_completed']}: {result.message or action.get('message', msgs['done'])}"
+            logger.info("")
+            logger.info("🎉 " + "=" * 48)
+            logger.info(
+                "✅ %s: %s", msgs['task_completed'], result.message or action.get('message', msgs['done'])
             )
-            print("=" * 50 + "\n")
+            logger.info("=" * 50 + "\n")
 
         return StepResult(
             success=result.success,

@@ -20,6 +20,9 @@ from phone_agent.desktop import (
 )
 from phone_agent.model import ModelClient, ModelConfig
 from phone_agent.model.client import MessageBuilder
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -130,17 +133,17 @@ class DesktopAgent:
         # 处理开始状态配置
         if self.agent_config.start_from_desktop or self.agent_config.minimize_all_before_start:
             if self.agent_config.verbose:
-                print("📋 准备开始状态...")
+                logger.info("📋 准备开始状态...")
             if self.agent_config.minimize_all_before_start:
                 minimize_all_windows()
                 if self.agent_config.verbose:
-                    print("  ✓ 已最小化所有窗口")
+                    logger.info("  ✓ 已最小化所有窗口")
             elif self.agent_config.start_from_desktop:
                 home()
                 if self.agent_config.verbose:
-                    print("  ✓ 已回到桌面")
+                    logger.info("  ✓ 已回到桌面")
             if self.agent_config.verbose:
-                print()
+                logger.info("")
 
         # 创建截图目录（如果需要保存截图）
         if self.agent_config.save_screenshots:
@@ -198,11 +201,11 @@ class DesktopAgent:
 
         # 调试输出：当前状态信息
         if self.agent_config.debug:
-            print(f"\n🔍 [步骤 {self._step_count}] 当前状态:")
-            print(f"  应用: {current_app}")
-            print(f"  窗口标题: {window_info.get('title', 'Unknown')}")
-            print(f"  进程: {window_info.get('process', 'Unknown')}")
-            print(f"  屏幕尺寸: {screenshot.width}x{screenshot.height}")
+            logger.info("\n🔍 [步骤 %s] 当前状态:", self._step_count)
+            logger.info("  应用: %s", current_app)
+            logger.info("  窗口标题: %s", window_info.get('title', 'Unknown'))
+            logger.info("  进程: %s", window_info.get('process', 'Unknown'))
+            logger.info("  屏幕尺寸: %sx%s", screenshot.width, screenshot.height)
 
         # 保存截图（如果启用）
         if self.agent_config.save_screenshots:
@@ -219,10 +222,10 @@ class DesktopAgent:
                 with open(screenshot_path, "wb") as f:
                     f.write(img_data)
                 if self.agent_config.debug:
-                    print(f"  截图已保存: {screenshot_path}")
+                    logger.info("  截图已保存: %s", screenshot_path)
             except Exception as e:
                 if self.agent_config.debug:
-                    print(f"  保存截图失败: {e}")
+                    logger.info("  保存截图失败: %s", e)
 
         # 构建消息
         if is_first:
@@ -252,9 +255,9 @@ class DesktopAgent:
         try:
             msgs = get_messages(self.agent_config.lang)
             if self.agent_config.verbose:
-                print("\n" + "=" * 50)
-                print(f"💭 {msgs['thinking']}:")
-                print("-" * 50)
+                logger.info("\n" + "=" * 50)
+                logger.info("💭 %s:", msgs['thinking'])
+                logger.info("-" * 50)
             response = self.model_client.request(self._context)
         except Exception as e:
             if self.agent_config.verbose:
@@ -277,16 +280,16 @@ class DesktopAgent:
 
         if self.agent_config.verbose:
             # 打印思考过程
-            print("-" * 50)
-            print(f"🎯 {msgs['action']}:")
-            print(json.dumps(action, ensure_ascii=False, indent=2))
-            print("=" * 50 + "\n")
+            logger.info("-" * 50)
+            logger.info("🎯 %s:", msgs['action'])
+            logger.info(json.dumps(action, ensure_ascii=False, indent=2))
+            logger.info("=" * 50 + "\n")
 
         # 调试输出：操作详情
         if self.agent_config.debug:
-            print(f"📝 执行操作: {action.get('action', 'Unknown')}")
+            logger.info("📝 执行操作: %s", action.get('action', 'Unknown'))
             if self.agent_config.log_actions:
-                print(f"   操作详情: {json.dumps(action, ensure_ascii=False)}")
+                logger.info("   操作详情: %s", json.dumps(action, ensure_ascii=False))
 
         # 从上下文中移除图片以节省空间
         self._context[-1] = MessageBuilder.remove_images_from_message(
@@ -301,14 +304,14 @@ class DesktopAgent:
 
             # 调试输出：操作结果
             if self.agent_config.debug:
-                print(f"✅ 操作结果: {'成功' if result.success else '失败'}")
+                logger.info("✅ 操作结果: %s", '成功' if result.success else '失败')
                 if result.message:
-                    print(f"   消息: {result.message}")
+                    logger.info("   消息: %s", result.message)
         except Exception as e:
             if self.agent_config.verbose:
                 traceback.print_exc()
             if self.agent_config.debug:
-                print(f"❌ 操作异常: {e}")
+                logger.info("❌ 操作异常: %s", e)
             result = self.action_handler.execute(
                 finish(message=str(e)), screenshot.width, screenshot.height
             )
@@ -325,11 +328,9 @@ class DesktopAgent:
 
         if finished and self.agent_config.verbose:
             msgs = get_messages(self.agent_config.lang)
-            print("\n" + "🎉 " + "=" * 48)
-            print(
-                f"✅ {msgs['task_completed']}: {result.message or action.get('message', msgs['done'])}"
-            )
-            print("=" * 50 + "\n")
+            logger.info("\n" + "🎉 " + "=" * 48)
+            logger.info("✅ %s: %s", msgs['task_completed'], result.message or action.get('message', msgs['done']))
+            logger.info("=" * 50 + "\n")
 
         return StepResult(
             success=result.success,

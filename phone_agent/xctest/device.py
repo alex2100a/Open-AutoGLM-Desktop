@@ -5,6 +5,9 @@ import time
 from typing import Optional
 
 from phone_agent.config.apps_ios import APP_PACKAGES_IOS as APP_PACKAGES
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 SCALE_FACTOR = 3 # 3 for most modern iPhone 
 
@@ -65,9 +68,9 @@ def get_current_app(
             return "System Home"
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error getting current app: {e}")
+        logger.info("Error getting current app: %s", e)
 
     return "System Home"
 
@@ -116,9 +119,9 @@ def tap(
         time.sleep(delay)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error tapping: {e}")
+        logger.info("Error tapping: %s", e)
 
 
 def double_tap(
@@ -169,9 +172,9 @@ def double_tap(
         time.sleep(delay)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error double tapping: {e}")
+        logger.info("Error double tapping: %s", e)
 
 
 def long_press(
@@ -223,9 +226,9 @@ def long_press(
         time.sleep(delay)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error long pressing: {e}")
+        logger.info("Error long pressing: %s", e)
 
 
 def swipe(
@@ -276,9 +279,9 @@ def swipe(
         time.sleep(delay)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error swiping: {e}")
+        logger.info("Error swiping: %s", e)
 
 
 def back(
@@ -317,9 +320,9 @@ def back(
         time.sleep(delay)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error performing back gesture: {e}")
+        logger.info("Error performing back gesture: %s", e)
 
 
 def home(
@@ -345,9 +348,9 @@ def home(
         time.sleep(delay)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error pressing home: {e}")
+        logger.info("Error pressing home: %s", e)
 
 
 def launch_app(
@@ -385,10 +388,10 @@ def launch_app(
         return response.status_code in (200, 201)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
         return False
     except Exception as e:
-        print(f"Error launching app: {e}")
+        logger.info("Error launching app: %s", e)
         return False
 
 
@@ -420,9 +423,9 @@ def get_screen_size(
             return width, height
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error getting screen size: {e}")
+        logger.info("Error getting screen size: %s", e)
 
     # Default iPhone screen size (iPhone X and later)
     return 375, 812
@@ -453,6 +456,6 @@ def press_button(
         time.sleep(delay)
 
     except ImportError:
-        print("Error: requests library required. Install: pip install requests")
+        logger.info("Error: requests library required. Install: pip install requests")
     except Exception as e:
-        print(f"Error pressing button: {e}")
+        logger.info("Error pressing button: %s", e)

@@ -4,6 +4,10 @@ import platform
 from dataclasses import dataclass
 from typing import Any
 
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
+
 try:
     import mss
 except ImportError:
@@ -105,7 +109,7 @@ def list_displays() -> list[DisplayInfo]:
                     )
                 )
     except Exception as e:
-        print(f"获取显示器信息失败: {e}")
+        logger.info("获取显示器信息失败: %s", e)
         # 返回默认值
         if pyautogui:
             width, height = pyautogui.size()
@@ -154,7 +158,7 @@ def get_active_window_info() -> dict[str, Any]:
         except ImportError:
             return {"title": "Unknown", "process": "Unknown", "pid": 0}
         except Exception as e:
-            print(f"获取窗口信息失败: {e}")
+            logger.info("获取窗口信息失败: %s", e)
             return {"title": "Unknown", "process": "Unknown", "pid": 0}
 
     elif system == "darwin":  # macOS
@@ -184,7 +188,7 @@ def get_active_window_info() -> dict[str, Any]:
                     "pid": 0,
                 }
         except Exception as e:
-            print(f"获取窗口信息失败: {e}")
+            logger.info("获取窗口信息失败: %s", e)
 
     elif system == "linux":
         try:
@@ -209,7 +213,7 @@ def get_active_window_info() -> dict[str, Any]:
                 pid = int(result.stdout.strip()) if result.returncode == 0 else 0
                 return {"title": title, "process": "Unknown", "pid": pid}
         except Exception as e:
-            print(f"获取窗口信息失败: {e}")
+            logger.info("获取窗口信息失败: %s", e)
 
     return {"title": "Unknown", "process": "Unknown", "pid": 0}
 
@@ -260,7 +264,7 @@ def get_all_windows() -> list[dict[str, Any]]:
         except ImportError:
             pass
         except Exception as e:
-            print(f"获取窗口列表失败: {e}")
+            logger.info("获取窗口列表失败: %s", e)
 
     elif system == "darwin":  # macOS
         try:
@@ -301,7 +305,7 @@ def get_all_windows() -> list[dict[str, Any]]:
                             }
                         )
         except Exception as e:
-            print(f"获取窗口列表失败: {e}")
+            logger.info("获取窗口列表失败: %s", e)
 
     elif system == "linux":
         try:
@@ -336,7 +340,7 @@ def get_all_windows() -> list[dict[str, Any]]:
                         except Exception:
                             pass
         except Exception as e:
-            print(f"获取窗口列表失败: {e}")
+            logger.error("获取窗口列表失败: %s", e)
 
     return windows
 
@@ -407,7 +411,7 @@ def switch_to_window(window_title: str | None = None, process_name: str | None =
         except ImportError:
             pass
         except Exception as e:
-            print(f"切换窗口失败: {e}")
+            logger.info("切换窗口失败: %s", e)
 
     elif system == "darwin":  # macOS
         try:
@@ -446,7 +450,7 @@ def switch_to_window(window_title: str | None = None, process_name: str | None =
             )
             return result.returncode == 0
         except Exception as e:
-            print(f"切换窗口失败: {e}")
+            logger.info("切换窗口失败: %s", e)
 
     elif system == "linux":
         try:
@@ -461,6 +465,6 @@ def switch_to_window(window_title: str | None = None, process_name: str | None =
                 )
                 return result.returncode == 0
         except Exception as e:
-            print(f"切换窗口失败: {e}")
+            logger.info("切换窗口失败: %s", e)
 
     return False

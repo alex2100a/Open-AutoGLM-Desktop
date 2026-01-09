@@ -10,6 +10,9 @@ from phone_agent import PhoneAgent
 from phone_agent.agent import AgentConfig
 from phone_agent.config import get_messages
 from phone_agent.model import ModelConfig
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def main(lang: str = "cn"):

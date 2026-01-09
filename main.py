@@ -32,6 +32,9 @@ from phone_agent.device_factory import DeviceType, get_device_factory, set_devic
 from phone_agent.model import ModelConfig
 from phone_agent.xctest import XCTestConnection
 from phone_agent.xctest import list_devices as list_ios_devices
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def check_system_requirements(
@@ -53,8 +56,8 @@ def check_system_requirements(
     Returns:
         True if all checks pass, False otherwise.
     """
-    print("🔍 Checking system requirements...")
-    print("-" * 50)
+    logger.info("🔍 检查系统要求...")
+    logger.info("-" * 50)
 
     all_passed = True
 
@@ -67,25 +70,25 @@ def check_system_requirements(
         tool_cmd = "adb" if device_type == DeviceType.ADB else "hdc"
 
     # Check 1: Tool installed
-    print(f"1. Checking {tool_name} installation...", end=" ")
+    logger.info("1. Checking %s installation...", tool_name)
     if shutil.which(tool_cmd) is None:
-        print("❌ FAILED")
-        print(f"   Error: {tool_name} is not installed or not in PATH.")
-        print(f"   Solution: Install {tool_name}:")
+        logger.info("❌ FAILED")
+        logger.info("   Error: %s is not installed or not in PATH.", tool_name)
+        logger.info("   Solution: Install %s:", tool_name)
         if device_type == DeviceType.ADB:
-            print("     - macOS: brew install android-platform-tools")
-            print("     - Linux: sudo apt install android-tools-adb")
-            print(
+            logger.info("     - macOS: brew install android-platform-tools")
+            logger.info("     - Linux: sudo apt install android-tools-adb")
+            logger.info(
                 "     - Windows: Download from https://developer.android.com/studio/releases/platform-tools"
             )
         elif device_type == DeviceType.HDC:
-            print(
+            logger.info(
                 "     - Download from HarmonyOS SDK or https://gitee.com/openharmony/docs"
             )
-            print("     - Add to PATH environment variable")
+            logger.info("     - Add to PATH environment variable")
         else:  # IOS
-            print("     - macOS: brew install libimobiledevice")
-            print("     - Linux: sudo apt-get install libimobiledevice-utils")
+            logger.info("     - macOS: brew install libimobiledevice")
+            logger.info("     - Linux: sudo apt-get install libimobiledevice-utils")
         all_passed = False
     else:
         # Double check by running version command
@@ -102,28 +105,28 @@ def check_system_requirements(
             )
             if result.returncode == 0:
                 version_line = result.stdout.strip().split("\n")[0]
-                print(f"✅ OK ({version_line if version_line else 'installed'})")
+                logger.info("✅ OK (%s)", version_line if version_line else 'installed')
             else:
-                print("❌ FAILED")
-                print(f"   Error: {tool_name} command failed to run.")
+                logger.info("❌ FAILED")
+                logger.info("   Error: %s command failed to run.", tool_name)
                 all_passed = False
         except FileNotFoundError:
-            print("❌ FAILED")
-            print(f"   Error: {tool_name} command not found.")
+            logger.info("❌ FAILED")
+            logger.info("   Error: %s command not found.", tool_name)
             all_passed = False
         except subprocess.TimeoutExpired:
-            print("❌ FAILED")
-            print(f"   Error: {tool_name} command timed out.")
+            logger.info("❌ FAILED")
+            logger.info("   Error: %s command timed out.", tool_name)
             all_passed = False
 
     # If ADB is not installed, skip remaining checks
     if not all_passed:
-        print("-" * 50)
-        print("❌ System check failed. Please fix the issues above.")
+        logger.info("-" * 50)
+        logger.info("❌ System check failed. Please fix the issues above.")
         return False
 
     # Check 2: Device connected
-    print("2. Checking connected devices...", end=" ")
+    logger.info("2. Checking connected devices...")
     try:
         if device_type == DeviceType.ADB:
             result = subprocess.run(
@@ -145,26 +148,26 @@ def check_system_requirements(
             devices = [d.device_id for d in ios_devices]
 
         if not devices:
-            print("❌ FAILED")
-            print("   Error: No devices connected.")
-            print("   Solution:")
+            logger.info("❌ FAILED")
+            logger.info("   Error: No devices connected.")
+            logger.info("   Solution:")
             if device_type == DeviceType.ADB:
-                print("     1. Enable USB debugging on your Android device")
-                print("     2. Connect via USB and authorize the connection")
-                print(
+                logger.info("     1. Enable USB debugging on your Android device")
+                logger.info("     2. Connect via USB and authorize the connection")
+                logger.info(
                     "     3. Or connect remotely: python main.py --connect <ip>:<port>"
                 )
             elif device_type == DeviceType.HDC:
-                print("     1. Enable USB debugging on your HarmonyOS device")
-                print("     2. Connect via USB and authorize the connection")
-                print(
+                logger.info("     1. Enable USB debugging on your HarmonyOS device")
+                logger.info("     2. Connect via USB and authorize the connection")
+                logger.info(
                     "     3. Or connect remotely: python main.py --device-type hdc --connect <ip>:<port>"
                 )
             else:  # IOS
-                print("     1. Connect your iOS device via USB")
-                print("     2. Unlock device and tap 'Trust This Computer'")
-                print("     3. Verify: idevice_id -l")
-                print("     4. Or connect via WiFi using device IP")
+                logger.info("     1. Connect your iOS device via USB")
+                logger.info("     2. Unlock device and tap 'Trust This Computer'")
+                logger.info("     3. Verify: idevice_id -l")
+                logger.info("     4. Or connect via WiFi using device IP")
             all_passed = False
         else:
             if device_type == DeviceType.ADB:
@@ -173,27 +176,27 @@ def check_system_requirements(
                 device_ids = [d.strip() for d in devices]
             else:  # IOS
                 device_ids = devices
-            print(
-                f"✅ OK ({len(devices)} device(s): {', '.join(device_ids[:2])}{'...' if len(device_ids) > 2 else ''})"
+            logger.info(
+                "✅ OK (%d device(s): %s%s)", len(devices), ', '.join(device_ids[:2]), '...' if len(device_ids) > 2 else ''
             )
     except subprocess.TimeoutExpired:
-        print("❌ FAILED")
-        print(f"   Error: {tool_name} command timed out.")
+        logger.info("❌ FAILED")
+        logger.info("   Error: %s command timed out.", tool_name)
         all_passed = False
     except Exception as e:
-        print("❌ FAILED")
-        print(f"   Error: {e}")
+        logger.info("❌ FAILED")
+        logger.info("   Error: %s", e)
         all_passed = False
 
     # If no device connected, skip ADB Keyboard check
     if not all_passed:
-        print("-" * 50)
-        print("❌ System check failed. Please fix the issues above.")
+        logger.info("-" * 50)
+        logger.info("❌ System check failed. Please fix the issues above.")
         return False
 
     # Check 3: ADB Keyboard installed (only for ADB) or WebDriverAgent (for iOS)
     if device_type == DeviceType.ADB:
-        print("3. Checking ADB Keyboard...", end=" ")
+        logger.info("3. Checking ADB Keyboard...")
         try:
             result = subprocess.run(
                 ["adb", "shell", "ime", "list", "-s"],
@@ -204,67 +207,67 @@ def check_system_requirements(
             ime_list = result.stdout.strip()
 
             if "com.android.adbkeyboard/.AdbIME" in ime_list:
-                print("✅ OK")
+                logger.info("✅ OK")
             else:
-                print("❌ FAILED")
-                print("   Error: ADB Keyboard is not installed on the device.")
-                print("   Solution:")
-                print("     1. Download ADB Keyboard APK from:")
-                print(
+                logger.info("❌ FAILED")
+                logger.info("   Error: ADB Keyboard is not installed on the device.")
+                logger.info("   Solution:")
+                logger.info("     1. Download ADB Keyboard APK from:")
+                logger.info(
                     "        https://github.com/senzhk/ADBKeyBoard/blob/master/ADBKeyboard.apk"
                 )
-                print("     2. Install it on your device: adb install ADBKeyboard.apk")
-                print(
+                logger.info("     2. Install it on your device: adb install ADBKeyboard.apk")
+                logger.info(
                     "     3. Enable it in Settings > System > Languages & Input > Virtual Keyboard"
                 )
                 all_passed = False
         except subprocess.TimeoutExpired:
-            print("❌ FAILED")
-            print("   Error: ADB command timed out.")
+            logger.info("❌ FAILED")
+            logger.info("   Error: ADB command timed out.")
             all_passed = False
         except Exception as e:
-            print("❌ FAILED")
-            print(f"   Error: {e}")
+            logger.info("❌ FAILED")
+            logger.info("   Error: %s", e)
             all_passed = False
     elif device_type == DeviceType.HDC:
         # For HDC, skip keyboard check as it uses different input method
-        print("3. Skipping keyboard check for HarmonyOS...", end=" ")
-        print("✅ OK (using native input)")
+        logger.info("3. Skipping keyboard check for HarmonyOS...")
+        logger.info("✅ OK (using native input)")
     else:  # IOS
         # Check WebDriverAgent
-        print(f"3. Checking WebDriverAgent ({wda_url})...", end=" ")
+        logger.info("3. Checking WebDriverAgent (%s)...", wda_url)
         try:
             conn = XCTestConnection(wda_url=wda_url)
 
             if conn.is_wda_ready():
-                print("✅ OK")
+                logger.info("✅ OK")
                 # Get WDA status for additional info
                 status = conn.get_wda_status()
                 if status:
                     session_id = status.get("sessionId", "N/A")
-                    print(f"   Session ID: {session_id}")
+                    logger.info("   Session ID: %s", session_id)
             else:
-                print("❌ FAILED")
-                print("   Error: WebDriverAgent is not running or not accessible.")
-                print("   Solution:")
-                print("     1. Run WebDriverAgent on your iOS device via Xcode")
-                print("     2. For USB: Set up port forwarding: iproxy 8100 8100")
-                print(
+                logger.info("❌ FAILED")
+                logger.info("   Error: WebDriverAgent is not running or not accessible.")
+                logger.info("   Solution:")
+                logger.info("     1. Run WebDriverAgent on your iOS device via Xcode")
+                logger.info("     2. For USB: Set up port forwarding: iproxy 8100 8100")
+                logger.info(
                     "     3. For WiFi: Use device IP, e.g., --wda-url http://192.168.1.100:8100"
                 )
-                print("     4. Verify in browser: open http://localhost:8100/status")
+                logger.info("     4. Verify in browser: open http://localhost:8100/status")
                 all_passed = False
         except Exception as e:
-            print("❌ FAILED")
-            print(f"   Error: {e}")
+            logger.info("❌ FAILED")
+            logger.info("   Error: %s", e)
             all_passed = False
 
-    print("-" * 50)
+    logger.info("-" * 50)
 
     if all_passed:
-        print("✅ All system checks passed!\n")
+        logger.info("✅ All system checks passed!\n")
     else:
-        print("❌ System check failed. Please fix the issues above.")
+        logger.info("❌ System check failed. Please fix the issues above.")
 
     return all_passed
 
@@ -285,13 +288,13 @@ def check_model_api(base_url: str, model_name: str, api_key: str = "EMPTY") -> b
     Returns:
         True if all checks pass, False otherwise.
     """
-    print("🔍 Checking model API...")
-    print("-" * 50)
+    logger.info("🔍 Checking model API...")
+    logger.info("-" * 50)
 
     all_passed = True
 
     # Check 1: Network connectivity using chat API
-    print(f"1. Checking API connectivity ({base_url})...", end=" ")
+    logger.info("1. Checking API connectivity (%s)...", base_url)
     try:
         # Create OpenAI client
         client = OpenAI(base_url=base_url, api_key=api_key, timeout=30.0)
@@ -307,47 +310,47 @@ def check_model_api(base_url: str, model_name: str, api_key: str = "EMPTY") -> b
 
         # Check if we got a valid response
         if response.choices and len(response.choices) > 0:
-            print("✅ OK")
+            logger.info("✅ OK")
         else:
-            print("❌ FAILED")
-            print("   Error: Received empty response from API")
+            logger.info("❌ FAILED")
+            logger.info("   Error: Received empty response from API")
             all_passed = False
 
     except Exception as e:
-        print("❌ FAILED")
+        logger.info("❌ FAILED")
         error_msg = str(e)
 
         # Provide more specific error messages
         if "Connection refused" in error_msg or "Connection error" in error_msg:
-            print(f"   Error: Cannot connect to {base_url}")
-            print("   Solution:")
-            print("     1. Check if the model server is running")
-            print("     2. Verify the base URL is correct")
-            print(f"     3. Try: curl {base_url}/chat/completions")
+            logger.info("   Error: Cannot connect to %s", base_url)
+            logger.info("   Solution:")
+            logger.info("     1. Check if the model server is running")
+            logger.info("     2. Verify the base URL is correct")
+            logger.info("     3. Try: curl %s/chat/completions", base_url)
         elif "timed out" in error_msg.lower() or "timeout" in error_msg.lower():
-            print(f"   Error: Connection to {base_url} timed out")
-            print("   Solution:")
-            print("     1. Check your network connection")
-            print("     2. Verify the server is responding")
+            logger.info("   Error: Connection to %s timed out", base_url)
+            logger.info("   Solution:")
+            logger.info("     1. Check your network connection")
+            logger.info("     2. Verify the server is responding")
         elif (
             "Name or service not known" in error_msg
             or "nodename nor servname" in error_msg
         ):
-            print(f"   Error: Cannot resolve hostname")
-            print("   Solution:")
-            print("     1. Check the URL is correct")
-            print("     2. Verify DNS settings")
+            logger.info("   Error: Cannot resolve hostname")
+            logger.info("   Solution:")
+            logger.info("     1. Check the URL is correct")
+            logger.info("     2. Verify DNS settings")
         else:
-            print(f"   Error: {error_msg}")
+            logger.info("   Error: %s", error_msg)
 
         all_passed = False
 
-    print("-" * 50)
+    logger.info("-" * 50)
 
     if all_passed:
-        print("✅ Model API checks passed!\n")
+        logger.info("✅ Model API checks passed!\n")
     else:
-        print("❌ Model API check failed. Please fix the issues above.")
+        logger.info("❌ Model API check failed. Please fix the issues above.")
 
     return all_passed
 
@@ -537,62 +540,62 @@ def handle_ios_device_commands(args) -> bool:
     if args.list_devices:
         devices = list_ios_devices()
         if not devices:
-            print("No iOS devices connected.")
-            print("\nTroubleshooting:")
-            print("  1. Connect device via USB")
-            print("  2. Unlock device and trust this computer")
-            print("  3. Run: idevice_id -l")
+            logger.info("No iOS devices connected.")
+            logger.info("\nTroubleshooting:")
+            logger.info("  1. Connect device via USB")
+            logger.info("  2. Unlock device and trust this computer")
+            logger.info("  3. Run: idevice_id -l")
         else:
-            print("Connected iOS devices:")
-            print("-" * 70)
+            logger.info("Connected iOS devices:")
+            logger.info("-" * 70)
             for device in devices:
                 conn_type = device.connection_type.value
                 model_info = f"{device.model}" if device.model else "Unknown"
                 ios_info = f"iOS {device.ios_version}" if device.ios_version else ""
                 name_info = device.device_name or "Unnamed"
 
-                print(f"  ✓ {name_info}")
-                print(f"    UUID: {device.device_id}")
-                print(f"    Model: {model_info}")
-                print(f"    OS: {ios_info}")
-                print(f"    Connection: {conn_type}")
-                print("-" * 70)
+                logger.info("  ✓ %s", name_info)
+                logger.info("    UUID: %s", device.device_id)
+                logger.info("    Model: %s", model_info)
+                logger.info("    OS: %s", ios_info)
+                logger.info("    Connection: %s", conn_type)
+                logger.info("-" * 70)
         return True
 
     # Handle --pair
     if args.pair:
-        print("Pairing with iOS device...")
+        logger.info("Pairing with iOS device...")
         success, message = conn.pair_device(args.device_id)
-        print(f"{'✓' if success else '✗'} {message}")
+        logger.info("%s %s", '✓' if success else '✗', message)
         return True
 
     # Handle --wda-status
     if args.wda_status:
-        print(f"Checking WebDriverAgent status at {args.wda_url}...")
-        print("-" * 50)
+        logger.info("Checking WebDriverAgent status at %s...", args.wda_url)
+        logger.info("-" * 50)
 
         if conn.is_wda_ready():
-            print("✓ WebDriverAgent is running")
+            logger.info("✓ WebDriverAgent is running")
 
             status = conn.get_wda_status()
             if status:
-                print(f"\nStatus details:")
+                logger.info("\nStatus details:")
                 value = status.get("value", {})
-                print(f"  Session ID: {status.get('sessionId', 'N/A')}")
-                print(f"  Build: {value.get('build', {}).get('time', 'N/A')}")
+                logger.info("  Session ID: %s", status.get('sessionId', 'N/A'))
+                logger.info("  Build: %s", value.get('build', {}).get('time', 'N/A'))
 
                 current_app = value.get("currentApp", {})
                 if current_app:
-                    print(f"\nCurrent App:")
-                    print(f"  Bundle ID: {current_app.get('bundleId', 'N/A')}")
-                    print(f"  Process ID: {current_app.get('pid', 'N/A')}")
+                    logger.info("\nCurrent App:")
+                    logger.info("  Bundle ID: %s", current_app.get('bundleId', 'N/A'))
+                    logger.info("  Process ID: %s", current_app.get('pid', 'N/A'))
         else:
-            print("✗ WebDriverAgent is not running")
-            print("\nPlease start WebDriverAgent on your iOS device:")
-            print("  1. Open WebDriverAgent.xcodeproj in Xcode")
-            print("  2. Select your device")
-            print("  3. Run WebDriverAgentRunner (Product > Test or Cmd+U)")
-            print(f"  4. For USB: Run port forwarding: iproxy 8100 8100")
+            logger.info("✗ WebDriverAgent is not running")
+            logger.info("\nPlease start WebDriverAgent on your iOS device:")
+            logger.info("  1. Open WebDriverAgent.xcodeproj in Xcode")
+            logger.info("  2. Select your device")
+            logger.info("  3. Run WebDriverAgentRunner (Product > Test or Cmd+U)")
+            logger.info("  4. For USB: Run port forwarding: iproxy 8100 8100")
 
         return True
 
@@ -624,24 +627,24 @@ def handle_device_commands(args) -> bool:
     if args.list_devices:
         devices = device_factory.list_devices()
         if not devices:
-            print("No devices connected.")
+            logger.info("No devices connected.")
         else:
-            print("Connected devices:")
-            print("-" * 60)
+            logger.info("Connected devices:")
+            logger.info("-" * 60)
             for device in devices:
                 status_icon = "✓" if device.status == "device" else "✗"
                 conn_type = device.connection_type.value
                 model_info = f" ({device.model})" if device.model else ""
-                print(
-                    f"  {status_icon} {device.device_id:<30} [{conn_type}]{model_info}"
+                logger.info(
+                    "  %s %s%-30s [%s]%s", status_icon, device.device_id, conn_type, model_info
                 )
         return True
 
     # Handle --connect
     if args.connect:
-        print(f"Connecting to {args.connect}...")
+        logger.info("Connecting to %s...", args.connect)
         success, message = conn.connect(args.connect)
-        print(f"{'✓' if success else '✗'} {message}")
+        logger.info("%s %s", '✓' if success else '✗', message)
         if success:
             # Set as default device
             args.device_id = args.connect
@@ -650,32 +653,32 @@ def handle_device_commands(args) -> bool:
     # Handle --disconnect
     if args.disconnect:
         if args.disconnect == "all":
-            print("Disconnecting all remote devices...")
+            logger.info("Disconnecting all remote devices...")
             success, message = conn.disconnect()
         else:
-            print(f"Disconnecting from {args.disconnect}...")
+            logger.info("Disconnecting from %s...", args.disconnect)
             success, message = conn.disconnect(args.disconnect)
-        print(f"{'✓' if success else '✗'} {message}")
+        logger.info("%s %s", '✓' if success else '✗', message)
         return True
 
     # Handle --enable-tcpip
     if args.enable_tcpip:
         port = args.enable_tcpip
-        print(f"Enabling TCP/IP debugging on port {port}...")
+        logger.info("Enabling TCP/IP debugging on port %d...", port)
 
         success, message = conn.enable_tcpip(port, args.device_id)
-        print(f"{'✓' if success else '✗'} {message}")
+        logger.info("%s %s", '✓' if success else '✗', message)
 
         if success:
             # Try to get device IP
             ip = conn.get_device_ip(args.device_id)
             if ip:
-                print(f"\nYou can now connect remotely using:")
-                print(f"  python main.py --connect {ip}:{port}")
-                print(f"\nOr via ADB directly:")
-                print(f"  adb connect {ip}:{port}")
+                logger.info("\nYou can now connect remotely using:")
+                logger.info("  python main.py --connect %s:%d", ip, port)
+                logger.info("\nOr via ADB directly:")
+                logger.info("  adb connect %s:%d", ip, port)
             else:
-                print("\nCould not determine device IP. Check device WiFi settings.")
+                logger.info("\nCould not determine device IP. Check device WiFi settings.")
         return True
 
     return False
@@ -706,23 +709,23 @@ def main():
     # Handle --list-apps (no system check needed)
     if args.list_apps:
         if device_type == DeviceType.HDC:
-            print("Supported HarmonyOS apps:")
+            logger.info("Supported HarmonyOS apps:")
             apps = list_harmonyos_apps()
         elif device_type == DeviceType.IOS:
-            print("Supported iOS apps:")
-            print("\nNote: For iOS apps, Bundle IDs are configured in:")
-            print("  phone_agent/config/apps_ios.py")
-            print("\nCurrently configured apps:")
+            logger.info("Supported iOS apps:")
+            logger.info("\nNote: For iOS apps, Bundle IDs are configured in:")
+            logger.info("  phone_agent/config/apps_ios.py")
+            logger.info("\nCurrently configured apps:")
             apps = list_ios_apps()
         else:
-            print("Supported Android apps:")
+            logger.info("Supported Android apps:")
             apps = list_supported_apps()
 
         for app in sorted(apps):
-            print(f"  - {app}")
+            logger.info("  - %s", app)
 
         if device_type == DeviceType.IOS:
-            print(
+            logger.info(
                 "\nTo add iOS apps, find the Bundle ID and add to APP_PACKAGES_IOS dictionary."
             )
         return
@@ -781,72 +784,72 @@ def main():
         )
 
     # Print header
-    print("=" * 50)
+    logger.info("=" * 50)
     if device_type == DeviceType.IOS:
-        print("Phone Agent iOS - AI-powered iOS automation")
+        logger.info("Phone Agent iOS - AI-powered iOS automation")
     else:
-        print("Phone Agent - AI-powered phone automation")
-    print("=" * 50)
-    print(f"Model: {model_config.model_name}")
-    print(f"Base URL: {model_config.base_url}")
-    print(f"Max Steps: {agent_config.max_steps}")
-    print(f"Language: {agent_config.lang}")
-    print(f"Device Type: {args.device_type.upper()}")
+        logger.info("Phone Agent - AI-powered phone automation")
+    logger.info("=" * 50)
+    logger.info("Model: %s", model_config.model_name)
+    logger.info("Base URL: %s", model_config.base_url)
+    logger.info("Max Steps: %d", agent_config.max_steps)
+    logger.info("Language: %s", agent_config.lang)
+    logger.info("Device Type: %s", args.device_type.upper())
 
     # Show iOS-specific config
     if device_type == DeviceType.IOS:
-        print(f"WDA URL: {args.wda_url}")
+        logger.info("WDA URL: %s", args.wda_url)
 
     # Show device info
     if device_type == DeviceType.IOS:
         devices = list_ios_devices()
         if agent_config.device_id:
-            print(f"Device: {agent_config.device_id}")
+            logger.info("Device: %s", agent_config.device_id)
         elif devices:
             device = devices[0]
-            print(f"Device: {device.device_name or device.device_id[:16]}")
+            logger.info("Device: %s", device.device_name or device.device_id[:16])
             if device.model and device.ios_version:
-                print(f"        {device.model}, iOS {device.ios_version}")
+                logger.info("        %s, iOS %s", device.model, device.ios_version)
     else:
         device_factory = get_device_factory()
         devices = device_factory.list_devices()
         if agent_config.device_id:
-            print(f"Device: {agent_config.device_id}")
+            logger.info("Device: %s", agent_config.device_id)
         elif devices:
-            print(f"Device: {devices[0].device_id} (auto-detected)")
+            logger.info("Device: %s (auto-detected)", devices[0].device_id)
 
-    print("=" * 50)
+    logger.info("=" * 50)
 
     # Run with provided task or enter interactive mode
     if args.task:
-        print(f"\nTask: {args.task}\n")
+        logger.info("\nTask: %s\n", args.task)
         result = agent.run(args.task)
-        print(f"\nResult: {result}")
+        logger.info("\nResult: %s", result)
     else:
         # Interactive mode
-        print("\nEntering interactive mode. Type 'quit' to exit.\n")
+        logger.info("\nEntering interactive mode. Type 'quit' to exit.\n")
 
         while True:
             try:
                 task = input("Enter your task: ").strip()
 
                 if task.lower() in ("quit", "exit", "q"):
-                    print("Goodbye!")
+                    logger.info("Goodbye!")
                     break
 
                 if not task:
                     continue
 
-                print()
+                logger.info()
                 result = agent.run(task)
-                print(f"\nResult: {result}\n")
+                logger.info("\nResult: %s\n", result)
                 agent.reset()
 
             except KeyboardInterrupt:
-                print("\n\nInterrupted. Goodbye!")
+                logger.info("\n\nInterrupted. Goodbye!")
                 break
             except Exception as e:
-                print(f"\nError: {e}\n")
+                logger.info("\nError: %s\n", e)
 
 
 if __name__ == "__main__":

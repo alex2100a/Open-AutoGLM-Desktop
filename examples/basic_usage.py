@@ -10,6 +10,9 @@ from phone_agent import PhoneAgent
 from phone_agent.agent import AgentConfig
 from phone_agent.config import get_messages
 from phone_agent.model import ModelConfig
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def example_basic_task(lang: str = "cn"):
@@ -38,7 +41,7 @@ def example_basic_task(lang: str = "cn"):
 
     # Execute task
     result = agent.run("打开小红书搜索美食攻略")
-    print(f"{msgs['task_result']}: {result}")
+    logger.info("%s: %s", msgs['task_result'], result)
 
 
 def example_with_callbacks(lang: str = "cn"):
@@ -47,14 +50,14 @@ def example_with_callbacks(lang: str = "cn"):
 
     def my_confirmation(message: str) -> bool:
         """Sensitive operation confirmation callback / 敏感操作确认回调"""
-        print(f"\n[{msgs['confirmation_required']}] {message}")
+        logger.info("\n[%s] %s", msgs['confirmation_required'], message)
         response = input(f"{msgs['continue_prompt']}: ")
         return response.lower() in ("yes", "y", "是")
 
     def my_takeover(message: str) -> None:
         """Manual takeover callback / 人工接管回调"""
-        print(f"\n[{msgs['manual_operation_required']}] {message}")
-        print(msgs["manual_operation_hint"])
+        logger.info("\n[%s] %s", msgs['manual_operation_required'], message)
+        logger.info(msgs["manual_operation_hint"])
         input(f"{msgs['press_enter_when_done']}: ")
 
     # Create Agent with custom callbacks
@@ -67,7 +70,7 @@ def example_with_callbacks(lang: str = "cn"):
 
     # Execute task that may require confirmation
     result = agent.run("打开淘宝搜索无线耳机并加入购物车")
-    print(f"{msgs['task_result']}: {result}")
+    logger.info("%s: %s", msgs['task_result'], result)
 
 
 def example_step_by_step(lang: str = "cn"):
@@ -79,15 +82,15 @@ def example_step_by_step(lang: str = "cn"):
 
     # Initialize task
     result = agent.step("打开美团搜索附近的火锅店")
-    print(f"{msgs['step']} 1: {result.action}")
+    logger.info("%s 1: %s", msgs['step'], result.action)
 
     # Continue if not finished
     while not result.finished and agent.step_count < 10:
         result = agent.step()
-        print(f"{msgs['step']} {agent.step_count}: {result.action}")
-        print(f"  {msgs['thinking']}: {result.thinking[:100]}...")
+        logger.info("%s %s: %s", msgs['step'], agent.step_count, result.action)
+        logger.info("  %s: %s...", msgs['thinking'], result.thinking[:100])
 
-    print(f"\n{msgs['final_result']}: {result.message}")
+    logger.info("\n%s: %s", msgs['final_result'], result.message)
 
 
 def example_multiple_tasks(lang: str = "cn"):
@@ -104,12 +107,12 @@ def example_multiple_tasks(lang: str = "cn"):
     ]
 
     for task in tasks:
-        print(f"\n{'=' * 50}")
-        print(f"{msgs['task']}: {task}")
-        print("=" * 50)
+        logger.info("\n%s", '=' * 50)
+        logger.info("%s: %s", msgs['task'], task)
+        logger.info("%s", "=" * 50)
 
         result = agent.run(task)
-        print(f"{msgs['result']}: {result}")
+        logger.info("%s: %s", msgs['result'], result)
 
         # Reset Agent state
         agent.reset()
@@ -127,10 +130,10 @@ def example_remote_device(lang: str = "cn"):
     # Connect to remote device
     success, message = conn.connect("192.168.1.100:5555")
     if not success:
-        print(f"{msgs['connection_failed']}: {message}")
+        logger.info("%s: %s", msgs['connection_failed'], message)
         return
 
-    print(f"{msgs['connection_successful']}: {message}")
+    logger.info("%s: %s", msgs['connection_successful'], message)
 
     # Create Agent with device specified
     agent_config = AgentConfig(
@@ -143,7 +146,7 @@ def example_remote_device(lang: str = "cn"):
 
     # Execute task
     result = agent.run("打开微信查看消息")
-    print(f"{msgs['task_result']}: {result}")
+    logger.info("%s: %s", msgs['task_result'], result)
 
     # Disconnect
     conn.disconnect("192.168.1.100:5555")
@@ -164,27 +167,27 @@ if __name__ == "__main__":
 
     msgs = get_messages(args.lang)
 
-    print("Phone Agent Usage Examples")
-    print("=" * 50)
+    logger.info("Phone Agent Usage Examples")
+    logger.info("%s", "=" * 50)
 
     # Run basic example
-    print(f"\n1. Basic Task Example")
-    print("-" * 30)
+    logger.info("\n1. Basic Task Example")
+    logger.info("%s", "-" * 30)
     example_basic_task(args.lang)
 
     # Uncomment to run other examples
-    # print(f"\n2. Task Example with Callbacks")
-    # print("-" * 30)
+    # logger.info("\n2. Task Example with Callbacks")
+    # logger.info("%s", "-" * 30)
     # example_with_callbacks(args.lang)
 
-    # print(f"\n3. Step-by-step Example")
-    # print("-" * 30)
+    # logger.info("\n3. Step-by-step Example")
+    # logger.info("%s", "-" * 30)
     # example_step_by_step(args.lang)
 
-    # print(f"\n4. Batch Task Example")
-    # print("-" * 30)
+    # logger.info("\n4. Batch Task Example")
+    # logger.info("%s", "-" * 30)
     # example_multiple_tasks(args.lang)
 
-    # print(f"\n5. Remote Device Example")
-    # print("-" * 30)
+    # logger.info("\n5. Remote Device Example")
+    # logger.info("%s", "-" * 30)
     # example_remote_device(args.lang)

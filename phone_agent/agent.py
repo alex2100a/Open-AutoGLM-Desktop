@@ -11,6 +11,9 @@ from phone_agent.config import get_messages, get_system_prompt
 from phone_agent.device_factory import get_device_factory
 from phone_agent.model import ModelClient, ModelConfig
 from phone_agent.model.client import MessageBuilder
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -171,9 +174,10 @@ class PhoneAgent:
         # Get model response
         try:
             msgs = get_messages(self.agent_config.lang)
-            print("\n" + "=" * 50)
-            print(f"💭 {msgs['thinking']}:")
-            print("-" * 50)
+            logger.info("")
+            logger.info("=" * 50)
+            logger.info("💭 %s:", msgs['thinking'])
+            logger.info("-" * 50)
             response = self.model_client.request(self._context)
         except Exception as e:
             if self.agent_config.verbose:
@@ -196,10 +200,10 @@ class PhoneAgent:
 
         if self.agent_config.verbose:
             # Print thinking process
-            print("-" * 50)
-            print(f"🎯 {msgs['action']}:")
-            print(json.dumps(action, ensure_ascii=False, indent=2))
-            print("=" * 50 + "\n")
+            logger.info("-" * 50)
+            logger.info("🎯 %s:", msgs['action'])
+            logger.info(json.dumps(action, ensure_ascii=False, indent=2))
+            logger.info("=" * 50 + "\n")
 
         # Remove image from context to save space
         self._context[-1] = MessageBuilder.remove_images_from_message(self._context[-1])
@@ -228,11 +232,12 @@ class PhoneAgent:
 
         if finished and self.agent_config.verbose:
             msgs = get_messages(self.agent_config.lang)
-            print("\n" + "🎉 " + "=" * 48)
-            print(
-                f"✅ {msgs['task_completed']}: {result.message or action.get('message', msgs['done'])}"
+            logger.info("")
+            logger.info("🎉 " + "=" * 48)
+            logger.info(
+                "✅ %s: %s", msgs['task_completed'], result.message or action.get('message', msgs['done'])
             )
-            print("=" * 50 + "\n")
+            logger.info("=" * 50 + "\n")
 
         return StepResult(
             success=result.success,

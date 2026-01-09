@@ -9,6 +9,9 @@ from typing import Any
 from openai import OpenAI
 
 from phone_agent.config.i18n import get_message
+from phone_agent.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -110,8 +113,8 @@ class ModelClient:
                     if marker in buffer:
                         # Marker found, print everything before it
                         thinking_part = buffer.split(marker, 1)[0]
-                        print(thinking_part, end="", flush=True)
-                        print()  # Print newline after thinking is complete
+                        logger.info(thinking_part)
+                        logger.info("")  # Print newline after thinking is complete
                         in_action_phase = True
                         marker_found = True
 
@@ -137,7 +140,7 @@ class ModelClient:
 
                 if not is_potential_marker:
                     # Safe to print the buffer
-                    print(buffer, end="", flush=True)
+                    logger.info(buffer)
                     buffer = ""
 
         # Calculate total time
@@ -151,22 +154,22 @@ class ModelClient:
         action = re.sub(r'<.*?>', r'', action)
         # Print performance metrics
         lang = self.config.lang
-        print()
-        print("=" * 50)
-        print(f"⏱️  {get_message('performance_metrics', lang)}:")
-        print("-" * 50)
+        logger.info("")
+        logger.info("=" * 50)
+        logger.info("⏱️  %s:", get_message('performance_metrics', lang))
+        logger.info("-" * 50)
         if time_to_first_token is not None:
-            print(
-                f"{get_message('time_to_first_token', lang)}: {time_to_first_token:.3f}s"
+            logger.info(
+                "%s: %.3fs", get_message('time_to_first_token', lang), time_to_first_token
             )
         if time_to_thinking_end is not None:
-            print(
-                f"{get_message('time_to_thinking_end', lang)}:        {time_to_thinking_end:.3f}s"
+            logger.info(
+                "%s:        %.3fs", get_message('time_to_thinking_end', lang), time_to_thinking_end
             )
-        print(
-            f"{get_message('total_inference_time', lang)}:          {total_time:.3f}s"
+        logger.info(
+            "%s:          %.3fs", get_message('total_inference_time', lang), total_time
         )
-        print("=" * 50)
+        logger.info("=" * 50)
 
         return ModelResponse(
             thinking=thinking,
