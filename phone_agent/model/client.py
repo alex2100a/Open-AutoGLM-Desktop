@@ -113,8 +113,8 @@ class ModelClient:
                     if marker in buffer:
                         # Marker found, print everything before it
                         thinking_part = buffer.split(marker, 1)[0]
-                        logger.info(thinking_part)
-                        logger.info("")  # Print newline after thinking is complete
+                        logger.debug(thinking_part)
+                        logger.debug("")  # Print newline after thinking is complete
                         in_action_phase = True
                         marker_found = True
 

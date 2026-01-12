@@ -24,7 +24,7 @@ from phone_agent.agent_desktop import DesktopAgent, DesktopAgentConfig
 from phone_agent.config.apps_desktop import list_supported_apps
 from phone_agent.desktop import list_displays
 from phone_agent.model import ModelConfig
-from phone_agent.utils import get_logger
+from phone_agent.utils import get_logger, setup_logging
 
 logger = get_logger(__name__)
 
@@ -343,6 +343,10 @@ def handle_display_commands(args) -> bool:
 def main():
     """主入口点。"""
     args = parse_args()
+
+    # 配置日志系统 - 根据 --debug 参数设置日志级别
+    log_level = "DEBUG" if args.debug else "INFO"
+    setup_logging(level=log_level)
 
     # 处理 --list-apps（不需要系统检查）
     if args.list_apps:
