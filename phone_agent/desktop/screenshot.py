@@ -78,8 +78,13 @@ def get_screenshot(
 
             # 转换为 base64
             buffered = BytesIO()
-            img.save(buffered, format="PNG")
+            # img.save(buffered, format="PNG")
+            img = img.convert("L") # 转换为灰度图像
+            img.save(buffered, format="JPEG",quality=75)
+
             base64_data = base64.b64encode(buffered.getvalue()).decode("utf-8")
+            logger.debug(f"截图成功: {sct_img.size}")
+            logger.debug(f"截图data size: {len(base64_data)}")
 
             return Screenshot(
                 base64_data=base64_data,

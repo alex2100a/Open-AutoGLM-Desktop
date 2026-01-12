@@ -1,0 +1,2 @@
+rem python desktop.py --model autoglm-phone-9b --base-url http://localhost:8000/v1 --apikey sk-xxxxx --display-id 1
+python desktop.py --start-from-desktop --minimize-all --debug --save-screenshots --screenshot-dir ./screenshots --app-mode new "打开Chrome，打开网址: https://www.baidu.com/"

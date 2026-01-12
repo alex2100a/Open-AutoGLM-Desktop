@@ -152,6 +152,8 @@ class ModelClient:
         thinking = re.sub(r'<.*?>', '', thinking)
         # action = re.sub(r'<answer>(.*?)</answer>', r'\1', action)
         action = re.sub(r'<.*?>', r'', action)
+        logger.debug("Thinking: %s", thinking)
+        logger.debug("Action: %s", action)
         # Print performance metrics
         lang = self.config.lang
         logger.info("")
